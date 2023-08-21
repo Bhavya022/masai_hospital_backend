@@ -16,8 +16,38 @@ exports.createAppointment=async(req,res)=>{
 } 
 exports.getAllAppointment=async(req,res)=>{
     try{
- const appointments = await Appointment.find() 
+ const appointments = await Appointment.find()  
+ const specialization = req.query.specialization;
+    if (specialization) {
+      appointments = appointments.filter(doctor => doctor.specialization === specialization);
+    }
+
+    
+    const sortByDate = req.query.sort === 'date';
+    if (sortByDate) {
+      appointments.sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    const searchQuery = req.query.search;
+    if (searchQuery) {
+      appointments = doctors.filter(doctor => doctor.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
  res.status(200).json(appointments) 
+    } 
+    catch(err){
+        res.status(500).json({err})
+    }
+}  
+exports.getbyid=async(req,res)=>{
+    try{
+ const {id} = req.params 
+ const updatedAppointment = req.body 
+ const appointment = await Appointment.findById(id) 
+ if(!appointment){
+    return res.status(404).json({error:'Appointment not found'})
+ }  
+ res.status(201).json({appointment}) 
     } 
     catch(err){
         res.status(500).json({err})
