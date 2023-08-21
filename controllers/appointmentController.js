@@ -15,29 +15,31 @@ exports.createAppointment=async(req,res)=>{
     }
 } 
 exports.getAllAppointment=async(req,res)=>{
-    try{
- const appointments = await Appointment.find()  
- const specialization = req.query.specialization;
-    if (specialization) {
-      appointments = appointments.filter(doctor => doctor.specialization === specialization);
-    }
-
+    try {
+        let appointments = await Appointment.find().lean(); // Convert query result to array
     
-    const sortByDate = req.query.sort === 'date';
-    if (sortByDate) {
-      appointments.sort((a, b) => a.date.localeCompare(b.date));
-    }
-
-    const searchQuery = req.query.search;
-    if (searchQuery) {
-      appointments = doctors.filter(doctor => doctor.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
-
- res.status(200).json(appointments) 
-    } 
-    catch(err){
-        res.status(500).json({err})
-    }
+        // Filter by specialization
+        const specialization = req.query.specialization;
+        if (specialization) {
+          appointments = appointments.filter(doctor => doctor.specialization === specialization);
+        }
+    
+        // Sort by date
+        const sortByDate = req.query.sort === 'date';
+        if (sortByDate) {
+          appointments.sort((a, b) => a.date.localeCompare(b.date));
+        }
+    
+        // Search query
+        const searchQuery = req.query.search;
+        if (searchQuery) {
+          appointments = appointments.filter(doctor => doctor.name.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+    
+        res.status(200).json(appointments);
+      } catch (err) {
+        res.status(500).json({ err });
+      }
 }  
 exports.getbyid=async(req,res)=>{
     try{
